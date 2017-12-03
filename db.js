@@ -6,6 +6,8 @@ const DB_HOST = process.env.DB_HOST || 'localhost'
 const DB_PORT = process.env.DB_PORT || 28015
 const DB_NAME = process.env.DB_NAME || 'car_simulator'
 
+const RETRY_WAIT = 2000
+const MAX_RETRIES = 30
 let connection = null
 
 const getInt = (obj, key, def = 0) => {
@@ -13,7 +15,7 @@ const getInt = (obj, key, def = 0) => {
   return Number.isNaN(parsed) ? def : parsed
 }
 
-const connect = () => {
+const connect = (tries = 0) => {
   return r.connect({ host: DB_HOST, port: DB_PORT })
     .then(conn => {
       connection = conn
@@ -22,6 +24,22 @@ const connect = () => {
         r.dbCreate(DB_NAME),
         null
       ).run(conn)
+    })
+    .catch(err => {
+      if (err instanceof r.Error.ReqlDriverError) {
+        if (tries >= MAX_RETRIES) {
+          console.error(
+            `Unable to reach RethinkDB after ${tries} tries, giving up`
+          )
+          throw err
+        }
+
+        console.warn('Unable to reach RethinkDB, retrying...')
+        return new Promise(resolve => setTimeout(resolve, RETRY_WAIT))
+          .then(() => connect(tries + 1))
+      }
+
+      throw err
     })
 }
 
