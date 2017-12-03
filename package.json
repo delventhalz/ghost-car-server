@@ -1,0 +1,20 @@
+{
+  "name": "ghost-protocol-server",
+  "version": "0.0.0",
+  "description": "stores a history of car ghosts",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "standard"
+  },
+  "author": "Zac Delventhal",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "rethinkdb": "^2.3.3"
+  },
+  "devDependencies": {
+    "standard": "^10.0.3"
+  }
+}

@@ -1,0 +1,19 @@
+version: '2.1'
+
+services:
+  server:
+    build: .
+    image: car-server
+    expose:
+      - 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      - rethink
+    environment:
+      - DB_HOST=rethink
+
+  rethink:
+    image: rethinkdb:2.3
+    expose:
+      - 28015
