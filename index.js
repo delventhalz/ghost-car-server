@@ -9,6 +9,11 @@ const app = express()
 
 app.use(bodyParser.json())
 
+app.use((req, res, next) => {
+  console.log(`Handling ${req.method} request for ${req.url}`)
+  next()
+})
+
 db.connect().then(() => {
   const ghostRouter = require('./routes/ghosts')
 
