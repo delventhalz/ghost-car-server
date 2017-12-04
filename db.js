@@ -2,11 +2,11 @@
 
 const r = require('rethinkdb')
 
-const DB_HOST = process.env.DB_HOST || 'localhost'
+const DB_HOST = process.env.DOCKERO_HOST || process.env.DB_HOST || 'localhost'
 const DB_PORT = process.env.DB_PORT || 28015
 const DB_NAME = process.env.DB_NAME || 'car_simulator'
 const DB_USER = process.env.DB_USER
-const DB_PASS = process.env.DB_PASS
+const DB_PASS = process.env.RETHINKDB_PASSWORD || process.env.DB_PASS
 
 const RETRY_WAIT = 2000
 const MAX_RETRIES = 30
@@ -23,7 +23,7 @@ const parseIfInt = val => {
 }
 
 const connect = (tries = 0) => {
-  const info = { host: DB_HOST, port: DB_PORT, db: DB_NAME }
+  const info = { host: DB_HOST, port: DB_PORT }
   if (DB_USER) info.user = DB_USER
   if (DB_PASS) info.password = DB_PASS
   if (DB_PASS && !DB_USER) info.DB_USER = 'admin'
@@ -37,6 +37,11 @@ const connect = (tries = 0) => {
         null
       ).run(conn)
     })
+    .then(() => {
+      info.db = DB_NAME
+      return r.connect(info)
+    })
+    .then(dbConn => { connection = dbConn })
     .catch(err => {
       if (err instanceof r.Error.ReqlDriverError) {
         if (tries >= MAX_RETRIES) {
