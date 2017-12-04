@@ -24,8 +24,8 @@ const parseIfInt = val => {
 
 const connect = (tries = 0) => {
   const info = { host: DB_HOST, port: DB_PORT, db: DB_NAME }
-  if (DB_USER) info.DB_USER = DB_USER
-  if (DB_PASS) info.DB_PASS = DB_PASS
+  if (DB_USER) info.user = DB_USER
+  if (DB_PASS) info.password = DB_PASS
   if (DB_PASS && !DB_USER) info.DB_USER = 'admin'
 
   return r.connect(info)
