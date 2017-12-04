@@ -5,6 +5,8 @@ const r = require('rethinkdb')
 const DB_HOST = process.env.DB_HOST || 'localhost'
 const DB_PORT = process.env.DB_PORT || 28015
 const DB_NAME = process.env.DB_NAME || 'car_simulator'
+const DB_USER = process.env.DB_USER
+const DB_PASS = process.env.DB_PASS
 
 const RETRY_WAIT = 2000
 const MAX_RETRIES = 30
@@ -16,7 +18,12 @@ const getInt = (obj, key, def = 0) => {
 }
 
 const connect = (tries = 0) => {
-  return r.connect({ host: DB_HOST, port: DB_PORT })
+  const info = { host: DB_HOST, port: DB_PORT, db: DB_NAME }
+  if (DB_USER) info.DB_USER = DB_USER
+  if (DB_PASS) info.DB_PASS = DB_PASS
+  if (DB_PASS && !DB_USER) info.DB_USER = 'admin'
+
+  return r.connect(info)
     .then(conn => {
       connection = conn
       return r.branch(
@@ -45,14 +52,14 @@ const connect = (tries = 0) => {
 
 const makeTable = (name, primaryKey) => {
   return r.branch(
-    r.db(DB_NAME).tableList().contains(name).not(),
-    r.db(DB_NAME).tableCreate(name, { primaryKey }),
+    r.tableList().contains(name).not(),
+    r.tableCreate(name, { primaryKey }),
     null
   ).run(connection)
 }
 
 const query = table => query => {
-  return query(r.db(DB_NAME).table(table)).run(connection)
+  return query(r.table(table)).run(connection)
     .then(results => results.toArray ? results.toArray() : results)
 }
 
