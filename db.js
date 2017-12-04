@@ -17,6 +17,11 @@ const getInt = (obj, key, def = 0) => {
   return Number.isNaN(parsed) ? def : parsed
 }
 
+const parseIfInt = val => {
+  const parsed = parseInt(val)
+  return Number.isNaN(parsed) ? val : parsed
+}
+
 const connect = (tries = 0) => {
   const info = { host: DB_HOST, port: DB_PORT, db: DB_NAME }
   if (DB_USER) info.DB_USER = DB_USER
@@ -76,7 +81,18 @@ const list = table => (opts = {}) => {
   let sort = opts.sort
   if (sort && sort[0] === '-') sort = r.desc(sort.slice(1))
 
+  const filters = Object.keys(opts)
+    .filter(key => !['start', 'limit', 'sort'].includes(key))
+    .map(key => {
+      const row = r.row(key)
+      if (opts[key][0] === '!') {
+        return row.eq(parseIfInt(opts[key].slice(1))).not()
+      }
+      return row.eq(parseIfInt(opts[key]))
+    })
+
   return query(table)(t => {
+    if (filters.length) t = t.filter(r.and.apply(null, filters))
     if (sort) t = t.orderBy(sort)
     return t.slice(start, limit)
   })
