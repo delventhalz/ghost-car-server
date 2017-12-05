@@ -15,9 +15,9 @@ app.use((req, res, next) => {
 })
 
 app.use((req, res, next) => {
-  const domains = ['flintgames.com', 'ldjam.com']
+  const domain = 'http://flintgames.com'
   const headers = ['Content-Type', 'Origin', 'X-Request-With', 'Accept']
-  res.header('Access-Control-Allow-Origin', domains.join())
+  res.header('Access-Control-Allow-Origin', domain)
   res.header('Access-Control-Allow-Headers', headers.join())
   next()
 })
